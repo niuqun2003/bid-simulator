@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>招标报价模拟分析系统</title>
+    <title>招标报价模拟分析系统 v2.0 (算法修正版)</title>
     <style>
         * {
             margin: 0;
@@ -35,9 +35,27 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
+        .header .version {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .alert-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #856404;
+        }
+
+        .alert-box strong {
+            display: block;
+            margin-bottom: 5px;
         }
 
         .main-grid {
@@ -74,7 +92,8 @@
         }
 
         .input-group input[type="number"],
-        .input-group input[type="range"] {
+        .input-group input[type="range"],
+        .input-group select {
             width: 100%;
             padding: 10px;
             border: 2px solid #e0e0e0;
@@ -83,14 +102,14 @@
             transition: border-color 0.3s;
         }
 
-        .input-group input[type="number"]:focus {
+        .input-group input[type="number"]:focus,
+        .input-group select:focus {
             outline: none;
             border-color: #667eea;
         }
 
-        .input-group input[type="range"] {
-            padding: 0;
-            height: 8px;
+        .input-group select {
+            cursor: pointer;
         }
 
         .range-display {
@@ -125,10 +144,6 @@
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .btn:active {
-            transform: translateY(0);
-        }
-
         .result-card {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
@@ -138,21 +153,11 @@
             margin-bottom: 20px;
         }
 
-        .result-card h3 {
-            font-size: 1.8em;
-            margin-bottom: 15px;
-        }
-
         .score-display {
             font-size: 4em;
             font-weight: bold;
             margin: 20px 0;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .probability {
-            font-size: 2em;
-            margin-top: 10px;
         }
 
         .detail-grid {
@@ -169,15 +174,19 @@
             backdrop-filter: blur(10px);
         }
 
-        .detail-item h4 {
-            font-size: 1em;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-
         .detail-item .value {
             font-size: 1.8em;
             font-weight: bold;
+        }
+
+        .warning-badge {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: 10px;
         }
 
         .comparison-table {
@@ -204,57 +213,6 @@
         }
 
         .rank-1 { color: #ff6b6b; font-weight: bold; }
-        .rank-2 { color: #ff8c42; }
-        .rank-3 { color: #ffd93d; }
-
-        .chart-container {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 10px;
-        }
-
-        .advice-box {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-        }
-
-        .advice-box h4 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .advice-box ul {
-            list-style-position: inside;
-            color: #856404;
-        }
-
-        .advice-box li {
-            margin-bottom: 8px;
-        }
-
-        .risk-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .risk-bar {
-            flex: 1;
-            height: 20px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .risk-fill {
-            height: 100%;
-            transition: width 0.5s ease, background 0.5s ease;
-        }
 
         .tech-score-grid {
             display: grid;
@@ -283,119 +241,27 @@
             border-radius: 5px;
         }
 
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .score-display {
-                font-size: 3em;
-            }
-
-            .detail-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .full-width {
             grid-column: 1 / -1;
         }
 
-        .scenario-buttons {
-            display: flex;
-            gap: 10px;
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
             margin-top: 15px;
-            flex-wrap: wrap;
+            border-radius: 5px;
+            font-size: 0.95em;
         }
 
-        .scenario-btn {
-            flex: 1;
-            min-width: 150px;
-            padding: 10px;
-            background: #f5f5f5;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
+        .info-box strong {
+            color: #1976d2;
         }
 
-        .scenario-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .info-icon {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            background: #667eea;
-            color: white;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 18px;
-            font-size: 12px;
-            cursor: help;
-            margin-left: 5px;
-        }
-
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.85em;
-        }
-
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -403,7 +269,18 @@
     <div class="container">
         <div class="header">
             <h1>🎯 招标报价模拟分析系统</h1>
-            <p>江苏华通/华汇网络安全提升项目 | 实时计算最优报价策略</p>
+            <div class="version">v2.0 算法修正版</div>
+            <p style="margin-top: 10px;">江苏华通/华汇网络安全提升项目 | 修正价格得分计算算法</p>
+        </div>
+
+        <div class="alert-box">
+            <strong>⚠️ 算法修正说明</strong>
+            <p>v2.0版本修正了价格得分计算问题:</p>
+            <ul style="margin-left: 20px; margin-top: 5px;">
+                <li>✅ 修正: 低于基准价时,偏差率取绝对值计算加分</li>
+                <li>✅ 新增: 价格得分上限设置(可选65/85/95/不限)</li>
+                <li>✅ 优化: 显示超分警告提示</li>
+            </ul>
         </div>
 
         <div class="main-grid">
@@ -412,24 +289,12 @@
                 <h2>📝 基础参数设置</h2>
                 
                 <div class="input-group">
-                    <label>
-                        最高投标限价 (万元)
-                        <span class="tooltip">
-                            <span class="info-icon">?</span>
-                            <span class="tooltiptext">招标文件规定的最高投标价格上限</span>
-                        </span>
-                    </label>
+                    <label>最高投标限价 (万元)</label>
                     <input type="number" id="maxLimit" value="29.788" step="0.001">
                 </div>
 
                 <div class="input-group">
-                    <label>
-                        您的报价 (万元)
-                        <span class="tooltip">
-                            <span class="info-icon">?</span>
-                            <span class="tooltiptext">拖动滑块或直接输入您计划的投标价格</span>
-                        </span>
-                    </label>
+                    <label>您的报价 (万元)</label>
                     <input type="range" id="yourBidSlider" min="15" max="30" value="19.5" step="0.1">
                     <div class="range-display">
                         <span>15万</span>
@@ -440,35 +305,30 @@
                 </div>
 
                 <div class="input-group">
-                    <label>
-                        市场平均报价 (万元)
-                        <span class="tooltip">
-                            <span class="info-icon">?</span>
-                            <span class="tooltiptext">预估其他投标人的平均报价水平</span>
-                        </span>
-                    </label>
+                    <label>市场平均报价 (万元)</label>
                     <input type="number" id="avgBid" value="23" step="0.1">
                 </div>
 
-                <div class="scenario-buttons">
-                    <button class="scenario-btn" onclick="setScenario('aggressive')">激进市场<br>(20万)</button>
-                    <button class="scenario-btn" onclick="setScenario('moderate')">中等市场<br>(23万)</button>
-                    <button class="scenario-btn" onclick="setScenario('conservative')">保守市场<br>(27万)</button>
-                </div>
-
-                <div class="input-group" style="margin-top: 20px;">
-                    <label>
-                        评标下浮率 (%)
-                        <span class="tooltip">
-                            <span class="info-icon">?</span>
-                            <span class="tooltiptext">现场随机抽取的下浮率: 0.5%, 1.0%, 1.5%, 2.0%, 2.5%</span>
-                        </span>
-                    </label>
+                <div class="input-group">
+                    <label>评标下浮率 (%)</label>
                     <input type="range" id="downRate" min="0.5" max="2.5" value="1.5" step="0.5">
                     <div class="range-display">
                         <span>0.5%</span>
                         <span class="slider-value" id="downRateValue">1.5%</span>
                         <span>2.5%</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>价格得分上限设置 ⭐</label>
+                    <select id="maxPriceScore">
+                        <option value="65">65分 (严格按文件字面意思)</option>
+                        <option value="85">85分 (允许低价加分至85)</option>
+                        <option value="95" selected>95分 (推荐,允许低价加分至95)</option>
+                        <option value="999">不限制 (理论计算)</option>
+                    </select>
+                    <div class="info-box">
+                        <strong>说明:</strong> 招标文件未明确上限。建议选95分(低15%可加满30分),或在答疑时向招标人确认。
                     </div>
                 </div>
 
@@ -542,7 +402,11 @@
                 <div class="detail-grid">
                     <div class="detail-item">
                         <h4>价格得分</h4>
-                        <div class="value" id="priceScore">0</div>
+                        <div class="value" id="priceScoreDisplay">
+                            <span id="priceScore">0</span>
+                            <span id="capWarning" class="warning-badge" style="display:none;">已封顶</span>
+                        </div>
+                        <div id="originalScore" style="font-size: 0.9em; margin-top: 5px; opacity: 0.8;"></div>
                     </div>
                     <div class="detail-item">
                         <h4>技术得分</h4>
@@ -556,14 +420,6 @@
                         <h4>预估中标概率</h4>
                         <div class="value probability" id="winProb">0%</div>
                     </div>
-                </div>
-                
-                <div class="risk-indicator">
-                    <span style="font-weight: bold;">报价风险等级:</span>
-                    <div class="risk-bar">
-                        <div class="risk-fill" id="riskFill" style="width: 50%; background: #4caf50;"></div>
-                    </div>
-                    <span id="riskLabel" style="font-weight: bold;">中等</span>
                 </div>
             </div>
 
@@ -584,12 +440,6 @@
                     <tbody id="comparisonBody">
                     </tbody>
                 </table>
-
-                <div class="advice-box" id="adviceBox">
-                    <h4>💡 智能建议</h4>
-                    <ul id="adviceList">
-                    </ul>
-                </div>
             </div>
 
             <div class="card full-width">
@@ -599,20 +449,15 @@
                         <tr>
                             <th>下浮率</th>
                             <th>评标基准价</th>
-                            <th>您的价格得分</th>
+                            <th>价格得分(原始)</th>
+                            <th>价格得分(受限)</th>
                             <th>综合得分</th>
-                            <th>价格排名</th>
                         </tr>
                     </thead>
                     <tbody id="downRateBody">
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 10px; color: white;">正在计算分析...</p>
         </div>
     </div>
 
@@ -658,128 +503,99 @@
             document.getElementById('totalTech').value = tech.toFixed(1);
         }
 
-        // 监听所有技术分输入
         document.querySelectorAll('.tech-item input').forEach(input => {
             input.addEventListener('input', updateTechScores);
         });
 
-        // 设置市场情景
-        function setScenario(type) {
-            const scenarios = {
-                'aggressive': 20,
-                'moderate': 23,
-                'conservative': 27
-            };
-            document.getElementById('avgBid').value = scenarios[type];
-        }
-
-        // 计算价格得分
-        function calcPriceScore(bid, basePrice) {
+        // 计算价格得分 (修正后的算法)
+        function calcPriceScore(bid, basePrice, maxScore = 999) {
             const F = 65;
             const E1 = 4;
             const E2 = 2;
             
+            // 计算偏差率
+            const deviation = (bid - basePrice) / basePrice;
+            
+            let rawScore;
             if (bid > basePrice) {
-                const deviation = (bid - basePrice) / basePrice;
-                return Math.max(0, F - deviation * 100 * E1);
+                // 高于基准价: 扣分
+                rawScore = F - Math.abs(deviation) * 100 * E1;
             } else {
-                const deviation = (basePrice - bid) / basePrice;
-                return Math.min(95, F + deviation * 100 * E2);
+                // 低于基准价: 加分 (关键修正: 使用绝对值)
+                rawScore = F + Math.abs(deviation) * 100 * E2;
             }
+            
+            // 应用上限
+            const cappedScore = Math.max(0, Math.min(rawScore, maxScore));
+            
+            return {
+                raw: rawScore,
+                capped: cappedScore,
+                isCapped: rawScore > maxScore
+            };
         }
 
         // 计算主函数
         function calculate() {
-            // 显示加载动画
-            document.getElementById('loading').classList.add('active');
-            document.getElementById('results').style.display = 'none';
+            const yourBid = parseFloat(document.getElementById('yourBid').value) * 10000;
+            const avgBid = parseFloat(document.getElementById('avgBid').value) * 10000;
+            const downRate = parseFloat(document.getElementById('downRate').value) / 100;
+            const techScore = parseFloat(document.getElementById('totalTech').value);
+            const maxScoreSetting = parseFloat(document.getElementById('maxPriceScore').value);
 
-            setTimeout(() => {
-                // 获取输入值
-                const maxLimit = parseFloat(document.getElementById('maxLimit').value) * 10000;
-                const yourBid = parseFloat(document.getElementById('yourBid').value) * 10000;
-                const avgBid = parseFloat(document.getElementById('avgBid').value) * 10000;
-                const downRate = parseFloat(document.getElementById('downRate').value) / 100;
-                const bidderCount = parseInt(document.getElementById('bidderCount').value);
-                const techScore = parseFloat(document.getElementById('totalTech').value);
+            // 计算评标基准价
+            const basePrice = avgBid * (1 - downRate);
 
-                // 计算评标基准价
-                const basePrice = avgBid * (1 - downRate);
+            // 计算价格得分
+            const priceResult = calcPriceScore(yourBid, basePrice, maxScoreSetting);
+            const yourTotalScore = priceResult.capped + techScore;
 
-                // 计算您的价格得分
-                const yourPriceScore = calcPriceScore(yourBid, basePrice);
-                const yourTotalScore = yourPriceScore + techScore;
+            // 更新显示
+            document.getElementById('priceScore').textContent = priceResult.capped.toFixed(1) + '分';
+            
+            if (priceResult.isCapped) {
+                document.getElementById('capWarning').style.display = 'inline-block';
+                document.getElementById('originalScore').textContent = 
+                    `(原始计算: ${priceResult.raw.toFixed(1)}分, 已限制在${maxScoreSetting}分)`;
+                document.getElementById('originalScore').style.display = 'block';
+            } else {
+                document.getElementById('capWarning').style.display = 'none';
+                document.getElementById('originalScore').style.display = 'none';
+            }
 
-                // 更新结果显示
-                document.getElementById('priceScore').textContent = yourPriceScore.toFixed(1) + '分';
-                document.getElementById('techScore').textContent = techScore.toFixed(1) + '分';
-                document.getElementById('totalScore').textContent = yourTotalScore.toFixed(1) + '分';
-                document.getElementById('priceRank').textContent = '🥇 第1名';
+            document.getElementById('techScore').textContent = techScore.toFixed(1) + '分';
+            document.getElementById('totalScore').textContent = yourTotalScore.toFixed(1) + '分';
+            document.getElementById('priceRank').textContent = '🥇 第1名';
 
-                // 计算中标概率
-                let winProb = 50;
-                if (techScore >= 30) {
-                    winProb = 85 + (yourPriceScore - 65) * 0.3;
-                } else if (techScore >= 25) {
-                    winProb = 70 + (yourPriceScore - 65) * 0.4;
-                } else if (techScore >= 20) {
-                    winProb = 50 + (yourPriceScore - 65) * 0.5;
-                } else {
-                    winProb = 30 + (yourPriceScore - 65) * 0.6;
-                }
-                winProb = Math.max(20, Math.min(98, winProb));
-                document.getElementById('winProb').textContent = Math.round(winProb) + '%';
+            // 计算中标概率
+            let winProb = 50;
+            const effectivePrice = priceResult.capped;
+            if (techScore >= 30) {
+                winProb = 85 + (effectivePrice - 65) * 0.3;
+            } else if (techScore >= 25) {
+                winProb = 70 + (effectivePrice - 65) * 0.4;
+            } else {
+                winProb = 50 + (effectivePrice - 65) * 0.5;
+            }
+            winProb = Math.max(20, Math.min(98, winProb));
+            document.getElementById('winProb').textContent = Math.round(winProb) + '%';
 
-                // 风险评估
-                const discountRate = (1 - yourBid / maxLimit) * 100;
-                let riskLevel, riskColor, riskWidth;
-                if (discountRate > 35) {
-                    riskLevel = '高风险';
-                    riskColor = '#f44336';
-                    riskWidth = 85;
-                } else if (discountRate > 25) {
-                    riskLevel = '中高风险';
-                    riskColor = '#ff9800';
-                    riskWidth = 65;
-                } else if (discountRate > 15) {
-                    riskLevel = '中等风险';
-                    riskColor = '#ffc107';
-                    riskWidth = 45;
-                } else {
-                    riskLevel = '低风险';
-                    riskColor = '#4caf50';
-                    riskWidth = 25;
-                }
-                document.getElementById('riskFill').style.width = riskWidth + '%';
-                document.getElementById('riskFill').style.background = riskColor;
-                document.getElementById('riskLabel').textContent = riskLevel;
+            // 生成对比分析
+            generateComparisonTable(yourBid, basePrice, techScore, yourTotalScore, maxScoreSetting);
+            generateDownRateScenarios(yourBid, avgBid, techScore, maxScoreSetting);
 
-                // 生成对比分析表
-                generateComparisonTable(yourBid, basePrice, techScore, yourTotalScore);
-
-                // 生成不同下浮率情景
-                generateDownRateScenarios(yourBid, avgBid, techScore);
-
-                // 生成智能建议
-                generateAdvice(discountRate, techScore, yourPriceScore, winProb);
-
-                // 隐藏加载动画，显示结果
-                document.getElementById('loading').classList.remove('active');
-                document.getElementById('results').style.display = 'block';
-                
-                // 平滑滚动到结果
-                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-            }, 500);
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
         }
 
         // 生成对比分析表
-        function generateComparisonTable(yourBid, basePrice, techScore, yourTotal) {
+        function generateComparisonTable(yourBid, basePrice, techScore, yourTotal, maxScore) {
             const testBids = [
-                yourBid,
+                yourBid * 0.85,
                 yourBid * 0.9,
+                yourBid * 0.95,
+                yourBid,
                 yourBid * 1.05,
-                yourBid * 1.1,
-                yourBid * 1.15,
                 basePrice
             ].sort((a, b) => a - b);
 
@@ -787,8 +603,8 @@
             tbody.innerHTML = '';
 
             testBids.forEach((bid, index) => {
-                const priceScore = calcPriceScore(bid, basePrice);
-                const totalScore = priceScore + techScore;
+                const result = calcPriceScore(bid, basePrice, maxScore);
+                const totalScore = result.capped + techScore;
                 const diff = totalScore - yourTotal;
                 const isCurrent = Math.abs(bid - yourBid) < 100;
 
@@ -797,8 +613,6 @@
                     advice = '当前报价';
                 } else if (diff > 0) {
                     advice = '更优选择 ✓';
-                } else if (diff > -5) {
-                    advice = '可考虑';
                 } else {
                     advice = '不推荐';
                 }
@@ -808,7 +622,7 @@
                         <td>${isCurrent ? '当前方案' : '方案' + (index + 1)}</td>
                         <td>${(bid / 10000).toFixed(2)}万</td>
                         <td>${bid > basePrice ? '+' : ''}${((bid - basePrice) / 10000).toFixed(2)}万</td>
-                        <td class="${priceScore >= 85 ? 'rank-1' : priceScore >= 75 ? 'rank-2' : 'rank-3'}">${priceScore.toFixed(1)}分</td>
+                        <td class="${result.capped >= 85 ? 'rank-1' : ''}">${result.capped.toFixed(1)}分${result.isCapped ? '⚠️' : ''}</td>
                         <td>${totalScore.toFixed(1)}分</td>
                         <td>${diff >= 0 ? '+' : ''}${diff.toFixed(1)}分</td>
                         <td>${advice}</td>
@@ -818,85 +632,30 @@
             });
         }
 
-        // 生成不同下浮率情景
-        function generateDownRateScenarios(yourBid, avgBid, techScore) {
+        // 生成下浮率情景
+        function generateDownRateScenarios(yourBid, avgBid, techScore, maxScore) {
             const downRates = [0.5, 1.0, 1.5, 2.0, 2.5];
             const tbody = document.getElementById('downRateBody');
             tbody.innerHTML = '';
 
             downRates.forEach(rate => {
                 const basePrice = avgBid * (1 - rate / 100);
-                const priceScore = calcPriceScore(yourBid, basePrice);
-                const totalScore = priceScore + techScore;
+                const result = calcPriceScore(yourBid, basePrice, maxScore);
+                const totalScore = result.capped + techScore;
 
                 const row = `
                     <tr>
                         <td>${rate.toFixed(1)}%</td>
                         <td>${(basePrice / 10000).toFixed(2)}万</td>
-                        <td class="${priceScore >= 85 ? 'rank-1' : priceScore >= 75 ? 'rank-2' : 'rank-3'}">${priceScore.toFixed(1)}分</td>
+                        <td>${result.raw.toFixed(1)}分</td>
+                        <td class="${result.capped >= 85 ? 'rank-1' : ''}">${result.capped.toFixed(1)}分${result.isCapped ? ' ⚠️' : ''}</td>
                         <td>${totalScore.toFixed(1)}分</td>
-                        <td>🥇 第1名</td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
         }
 
-        // 生成智能建议
-        function generateAdvice(discountRate, techScore, priceScore, winProb) {
-            const adviceList = document.getElementById('adviceList');
-            adviceList.innerHTML = '';
-
-            const advices = [];
-
-            // 根据下浮率给建议
-            if (discountRate > 35) {
-                advices.push('⚠️ 报价下浮超过35%,可能引起评委质疑。建议适当提高至25-30%区间。');
-            } else if (discountRate > 25) {
-                advices.push('✓ 报价下浮适中,价格竞争力强,但需注意成本控制。');
-            } else if (discountRate < 15) {
-                advices.push('💡 报价偏保守,建议适当降低以增强竞争力。');
-            }
-
-            // 根据技术分给建议
-            if (techScore < 25) {
-                advices.push('📋 技术标得分偏低(< 25分),强烈建议补充人员配置和业绩证明材料。');
-            } else if (techScore < 30) {
-                advices.push('📋 技术标得分良好,建议继续完善履约能力证明材料。');
-            } else {
-                advices.push('✓ 技术标得分优秀,保持当前配置即可。');
-            }
-
-            // 根据价格分给建议
-            if (priceScore >= 90) {
-                advices.push('🎯 价格得分极高(≥90分),在价格维度具有显著优势。');
-            } else if (priceScore >= 80) {
-                advices.push('🎯 价格得分良好(80-90分),保持合理竞争力。');
-            } else {
-                advices.push('⚠️ 价格得分偏低,建议降低报价以提升价格竞争力。');
-            }
-
-            // 根据中标概率给建议
-            if (winProb >= 80) {
-                advices.push('🏆 综合中标概率很高(≥80%),保持当前策略。');
-            } else if (winProb >= 60) {
-                advices.push('🏆 综合中标概率较高(60-80%),可考虑优化技术标或价格。');
-            } else {
-                advices.push('⚠️ 综合中标概率偏低(< 60%),建议同时优化价格和技术标。');
-            }
-
-            // 关键行动建议
-            advices.push('✅ 重点准备: 3个50万+的网络安全服务案例(可获9分),4类资质证书(可获6分)。');
-            advices.push('✅ 确保配备: 信息系统项目管理师、应急响应工程师、原厂认证工程师。');
-
-            advices.forEach(advice => {
-                const li = document.createElement('li');
-                li.textContent = advice;
-                adviceList.appendChild(li);
-            });
-        }
-
-        // 页面加载时初始化
         window.addEventListener('load', () => {
             updateTechScores();
         });
